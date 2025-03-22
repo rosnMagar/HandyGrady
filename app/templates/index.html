@@ -3,17 +3,23 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-body text-center">
-        <h1 class="card-title mb-4">Welcome to Flask Authentication System</h1>
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Welcome to Flask Authentication System</h1>
+    <div class="text-center">
         {% if current_user.is_authenticated %}
-            <p class="lead">You are logged in as {{ current_user.username }}</p>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            <p class="text-lg text-gray-600 mb-4">You are logged in as <span class="font-semibold">{{ current_user.username }}</span></p>
+            <a href="{{ url_for('dashboard') }}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors">
+                Go to Dashboard
+            </a>
         {% else %}
-            <p class="lead">Please login or register to access the dashboard</p>
-            <div class="d-grid gap-2 d-md-block">
-                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg mx-2">Login</a>
-                <a href="{{ url_for('register') }}" class="btn btn-success btn-lg mx-2">Register</a>
+            <p class="text-lg text-gray-600 mb-6">Please login or register to access the dashboard</p>
+            <div class="space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{{ url_for('login') }}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors">
+                    Login
+                </a>
+                <a href="{{ url_for('register') }}" class="inline-block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
+                    Register
+                </a>
             </div>
         {% endif %}
     </div>
