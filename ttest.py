@@ -187,45 +187,45 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, model_
         print(f"An error occurred: {e}")
         return None
 
-# # Load environment variables from .env file
-# load_dotenv()
+# Load environment variables from .env file
+load_dotenv()
 
 
-# if __name__ == '__main__':
-#     # Example usage
-#     PROBLEM_IMAGES = ["imgs\\testPaper.png"]  # Replace with actual paths to the problem images
-#     ANSWER_IMAGES = ["imgs\\ans1.png", "imgs\\ans2.png", "imgs\\ans3.png"]  # Replace with paths to the student's answer sheet pages.
-#     GRADING_STANDARDS = """
-# General Instructions: Grade each question independently based on the concepts and keywords listed below.
+if __name__ == '__main__':
+    # Example usage
+    PROBLEM_IMAGES = ["imgs\\testPaper.png"]  # Replace with actual paths to the problem images
+    ANSWER_IMAGES = ["imgs\\ans1.png", "imgs\\ans2.png", "imgs\\ans3.png"]  # Replace with paths to the student's answer sheet pages.
+    GRADING_STANDARDS = """
+General Instructions: Grade each question independently based on the concepts and keywords listed below.
 
-# Test Paper 1: History of the Roman Empire
+Test Paper 1: History of the Roman Empire
 
-# Question 1 (May be found on any page): What were the main reasons for the rise of the Roman Empire? (Max Score: 10)
-#     Keywords: Republic, Military, Expansion, Trade, Politics
-#     Concepts: Describe how Rome grew from a small city-state to a dominant power in the Mediterranean.
+Question 1 (May be found on any page): What were the main reasons for the rise of the Roman Empire? (Max Score: 10)
+    Keywords: Republic, Military, Expansion, Trade, Politics
+    Concepts: Describe how Rome grew from a small city-state to a dominant power in the Mediterranean.
 
-# Question 2 (May be found on any page): Explain the role of Julius Caesar in the late Roman Republic. (Max Score: 10)
-#     Keywords: Dictator, Reform, Power, Civil War, Senate
-#     Concepts: Discuss Caesar's impact on the transition from Republic to Empire.
+Question 2 (May be found on any page): Explain the role of Julius Caesar in the late Roman Republic. (Max Score: 10)
+    Keywords: Dictator, Reform, Power, Civil War, Senate
+    Concepts: Discuss Caesar's impact on the transition from Republic to Empire.
 
-# Test Paper 2: Calculus
+Test Paper 2: Calculus
 
-# Question 3 (May be found on any page): Solve for x: 2x + 5 = 11 (Max Score: 10)
-#     Keywords: Algebra, Equation, Solve
-#     Concepts: Correctly isolate x to find the solution.
+Question 3 (May be found on any page): Solve for x: 2x + 5 = 11 (Max Score: 10)
+    Keywords: Algebra, Equation, Solve
+    Concepts: Correctly isolate x to find the solution.
 
-# Question 4 (May be found on any page): Differentiate f(x) = x^3 + 2x^2 - x + 5 (Max Score: 10)
-#     Keywords: Derivative, Power Rule, Differentiation
-#     Concepts: Apply the power rule correctly to find the derivative.
-#     """
+Question 4 (May be found on any page): Differentiate f(x) = x^3 + 2x^2 - x + 5 (Max Score: 10)
+    Keywords: Derivative, Power Rule, Differentiation
+    Concepts: Apply the power rule correctly to find the derivative.
+    """
 
-#     grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS)
+    grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS)
 
-#     if grading_results:
-#         print("Grading Results:")
-#         print(f"Final Score: {grading_results['final_score']}")
-#         print("Individual Scores:", grading_results['scores'])
-#         print("Analyses:", grading_results['analyses'])
-#         print("Overall Feedback:", grading_results['feedback'])
-#     else:
-#         print("Failed to grade answers.")
+    if grading_results:
+        print("Grading Results:")
+        print(f"Final Score: {grading_results['final_score']}")
+        print("Individual Scores:", grading_results['scores'])
+        print("Analyses:", grading_results['analyses'])
+        print("Overall Feedback:", grading_results['feedback'])
+    else:
+        print("Failed to grade answers.")
