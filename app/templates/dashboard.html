@@ -3,32 +3,62 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-body text-center">
-        <h1 class="card-title mb-4">Dashboard</h1>
-        <div class="row">
-            <div class="col-md-8 mx-auto">
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title">User Information</h3>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <strong>Username:</strong> {{ current_user.username }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Email:</strong> {{ current_user.email }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Account Created:</strong> {{ current_user.date_created.strftime('%Y-%m-%d') }}
-                            </li>
-                        </ul>
+
+<div class="container mx-auto px-6 grid grid-cols-5 py-8">
+    {% include "/partials/_sidebar.html" %}
+    <div class="col-span-4">
+        <div class="flex">
+            <!-- Placeholder Area -->
+            <img class="object-cover flex-1 p-6 mt-auto" src="{{url_for('static', filename='images/HG_DashboardBanner.png')}}"/>
+            <!-- Main Content -->
+            <main class="flex-1 mt-auto">
+            <!-- Graded Homework Section -->
+                <div class="bg-white rounded-sm p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4">Graded Homework</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <span>Lab 7</span>
+                            <span class="text-gray-600">Math 2</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <span>Homework 5</span>
+                            <span class="text-gray-600">Math 1</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Homework 4</span>
+                            <span class="text-gray-600">English</span>
+                        </div>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <a href="{{ url_for('logout') }}" class="btn btn-danger btn-lg">Logout</a>
-                </div>
+            </main>
+        </div>
+        <!-- Work-To-Do Section -->
+        <div class="col-span-4">
+            <div class="bg-white rounded-lg px-6 py-12">
+                <h2 class="text-xl font-bold mb-4">Work-To-Do</h2>
+                <table class="w-full">
+                    <tbody class="divide-y">
+                        <tr>
+                            <td class="py-2">Homework 5</td>
+                            <td class="py-2">English</td>
+                            <td class="py-2 text-red-600">Due 3/24</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">Lab 8</td>
+                            <td class="py-2">Math 2</td>
+                            <td class="py-2 text-red-600">Due 4/1</td>
+                        </tr>
+                        <tr>
+                            <td>Essay Draft</span>
+                            <td class="py-2">English</span>
+                            <td class="py-2 text-red-600">Due 4/2</span>
+                        </tr>
+                    </tbody>
+                    
+                </table>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
