@@ -2,8 +2,13 @@ import google.generativeai as genai
 from PIL import Image  # You'll need to install Pillow: pip install Pillow
 import io  # for handling in-memory image data
 import json # make sure json lib is imported at the very beginning
+from dotenv import load_dotenv
+import os
 
-def grade_answer_gemini(question_image, answer_images, grading_standards, api_key, model_name='gemini-1.5-flash'):
+
+YOUR_API_KEY = os.environ.get('GEMINI_API_KEY')
+
+def grade_answer_gemini(question_image, answer_images, grading_standards, model_name='gemini-1.5-flash'):
     """
     Grades student answers based on an image question and answer images, using Gemini.
 
@@ -22,7 +27,7 @@ def grade_answer_gemini(question_image, answer_images, grading_standards, api_ke
             - "feedback": Overall feedback on the answers.
     """
 
-    genai.configure(api_key=api_key)
+    genai.configure(api_key=YOUR_API_KEY)
     model = genai.GenerativeModel(model_name)
 
     def load_image(image_data):
@@ -181,41 +186,43 @@ def grade_answer_gemini(question_image, answer_images, grading_standards, api_ke
         print(f"An error occurred: {e}")
         return None
 
+# Load environment variables from .env file
+load_dotenv()
 
  
-if __name__ == '__main__':
-    # Example usage
-    YOUR_API_KEY = "APIKEY" #DO NOT COMMIT THIS a
-    QUESTION_IMAGE = "imgs\\testPaper.png"  # Replace with actual path to the test paper image
-    ANSWER_IMAGES = ["imgs\\ans1.png", "imgs\\ans2.png", "imgs\\ans3.png"]  # Replace with paths to the student's answer sheet pages.
-    GRADING_STANDARDS = """
-General Instructions: Grade each question independently based on the concepts and keywords listed below.
-Overall Topic: History of the Roman Empire
+ 
+# if __name__ == '__main__':
+#     # Example usage
+#     QUESTION_IMAGE = "imgs\\testPaper.png"  # Replace with actual path to the test paper image
+#     ANSWER_IMAGES = ["imgs\\ans1.png", "imgs\\ans2.png", "imgs\\ans3.png"]  # Replace with paths to the student's answer sheet pages.
+#     GRADING_STANDARDS = """
+# General Instructions: Grade each question independently based on the concepts and keywords listed below.
+# Overall Topic: History of the Roman Empire
 
-Question 1 (May be found on any page): What were the main reasons for the rise of the Roman Empire? (Max Score: 10)
-    Keywords: Republic, Military, Expansion, Trade, Politics
-    Concepts: Describe how Rome grew from a small city-state to a dominant power in the Mediterranean.
+# Question 1 (May be found on any page): What were the main reasons for the rise of the Roman Empire? (Max Score: 10)
+#     Keywords: Republic, Military, Expansion, Trade, Politics
+#     Concepts: Describe how Rome grew from a small city-state to a dominant power in the Mediterranean.
 
-Question 2 (May be found on any page): Explain the role of Julius Caesar in the late Roman Republic. (Max Score: 10)
-    Keywords: Dictator, Reform, Power, Civil War, Senate
-    Concepts: Discuss Caesar's impact on the transition from Republic to Empire.
+# Question 2 (May be found on any page): Explain the role of Julius Caesar in the late Roman Republic. (Max Score: 10)
+#     Keywords: Dictator, Reform, Power, Civil War, Senate
+#     Concepts: Discuss Caesar's impact on the transition from Republic to Empire.
 
-Question 3 (May be found on any page): What were the primary causes of the decline and fall of the Western Roman Empire? (Max Score: 10)
-    Keywords: Barbarians, Economy, Corruption, Military, Division
-    Concepts: Identify the internal and external factors that led to the empire's collapse.
+# Question 3 (May be found on any page): What were the primary causes of the decline and fall of the Western Roman Empire? (Max Score: 10)
+#     Keywords: Barbarians, Economy, Corruption, Military, Division
+#     Concepts: Identify the internal and external factors that led to the empire's collapse.
 
-Question 4 (May be found on any page): Describe the contributions of Roman civilization to law, engineering, and architecture. (Max Score: 10)
-    Keywords: Law, Aqueducts, Roads, Arches, Concrete
-    Concepts: Explain Rome's lasting impact on these fields.
-    """
+# Question 4 (May be found on any page): Describe the contributions of Roman civilization to law, engineering, and architecture. (Max Score: 10)
+#     Keywords: Law, Aqueducts, Roads, Arches, Concrete
+#     Concepts: Explain Rome's lasting impact on these fields.
+#     """
 
-    grading_results = grade_answer_gemini(QUESTION_IMAGE, ANSWER_IMAGES, GRADING_STANDARDS, YOUR_API_KEY)
+    # grading_results = grade_answer_gemini(QUESTION_IMAGE, ANSWER_IMAGES, GRADING_STANDARDS)
 
-    if grading_results:
-        print("Grading Results:")
-        print(f"Final Score: {grading_results['final_score']}")
-        print("Individual Scores:", grading_results['scores'])
-        print("Analyses:", grading_results['analyses'])
-        print("Overall Feedback:", grading_results['feedback'])
-    else:
-        print("Failed to grade answers.")
+    # if grading_results:
+    #     print("Grading Results:")
+    #     print(f"Final Score: {grading_results['final_score']}")
+    #     print("Individual Scores:", grading_results['scores'])
+    #     print("Analyses:", grading_results['analyses'])
+    #     print("Overall Feedback:", grading_results['feedback'])
+    # else:
+    #     print("Failed to grade answers.")

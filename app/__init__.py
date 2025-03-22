@@ -1,6 +1,6 @@
 from flask import Flask
 from config import Config
-from .extensions import db, login_manager, bcrypt
+from .extensions import db, login_manager, bcrypt, migrate
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -12,6 +12,7 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     login_manager.login_view = 'login'
     login_manager.login_message_category = 'info'
+    migrate.init_app(app, db)
 
     # Import and register routes
     from .routes import init_routes
