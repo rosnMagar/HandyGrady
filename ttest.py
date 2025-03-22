@@ -83,7 +83,7 @@ def grade_answer_gemini(question_image, answer_images, grading_standards, api_ke
                     }},
                     ...
                 ]
-            }}
+            }} 
             ```
             If this page contains no answers, respond with 0.
             """
@@ -182,10 +182,10 @@ def grade_answer_gemini(question_image, answer_images, grading_standards, api_ke
         return None
 
 
-
+ 
 if __name__ == '__main__':
     # Example usage
-    YOUR_API_KEY = "AIzaSyC7ifBlXUVRt7GGDn_PMqSZFnsP99lp-Ws" #DO NOT COMMIT THIS
+    YOUR_API_KEY = "APIKEY" #DO NOT COMMIT THIS a
     QUESTION_IMAGE = "imgs\\testPaper.png"  # Replace with actual path to the test paper image
     ANSWER_IMAGES = ["imgs\\ans1.png", "imgs\\ans2.png", "imgs\\ans3.png"]  # Replace with paths to the student's answer sheet pages.
     GRADING_STANDARDS = """
