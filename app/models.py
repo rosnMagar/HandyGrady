@@ -22,10 +22,11 @@ class Homework(db.Model):
     problem_images = db.Column(db.Text, nullable=False, default='[]')
     answer_images = db.Column(db.Text, nullable=False, default='[]')
     image_modifications = db.Column(db.Text, nullable=False, default='[]')
-    analysis = db.Column(db.JSON)
-    final_score = db.Column(db.Float)
-    feedback = db.Column(db.Text)
+    analysis = db.Column(db.Text, nullable=False, default='[]')
+    final_score = db.Column(db.Float, nullable=False, default=0.0)
+    feedback = db.Column(db.Text, nullable=False, default="")
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('user.id'), nullable=False)
+    graded = db.Column(db.Boolean, nullable=False, default=False)
 
     def add_image(self, path):
         """Add an image path to the JSON list."""
@@ -33,9 +34,9 @@ class Homework(db.Model):
         paths.append(path)
         self.answer_images = json.dumps(paths)
 
-        paths = json.loads(self.problem_images) if self.problem_images else []
-        paths.append(path)
-        self.problem_images = json.dumps(paths)
+        paths2 = json.loads(self.problem_images) if self.problem_images else []
+        paths2.append(paths)
+        self.problem_images = json.dumps(paths2)
 
     def get_images(self):
         """Get a list of image paths."""
