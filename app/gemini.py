@@ -65,7 +65,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
         for mod in modifications:
             shape = mod['shape']
-            color = mod['color']
+            color = 'red'
             coords = mod['coordinates']
             text = mod['text']
             line_width = mod.get('line_width', 2)  # Default line width
@@ -168,7 +168,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                 "image_modifications": [
                     {{
                         "shape": "<shape to draw (e.g., circle, rectangle, line)>",
-                        "color": "<color of the shape (e.g., red, blue)>",
+                        "color": "red",
                         "coordinates": [<x1>, <y1>, <x2>, <y2>]  // or [<center_x>, <center_y>, <radius>] for circles, in ratio range [0,1]
                         "line_width": <integer>,
                         "font_size": <integer>,
