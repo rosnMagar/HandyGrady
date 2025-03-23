@@ -33,9 +33,9 @@ class Homework(db.Model):
         paths.append(path)
         self.answer_images = json.dumps(paths)
 
-        paths2 = json.loads(self.problem_images) if self.problem_images else []
-        paths2.append(paths)
-        self.problem_images = json.dumps(paths2)
+        paths = json.loads(self.problem_images) if self.problem_images else []
+        paths.append(path)
+        self.problem_images = json.dumps(paths)
 
     def get_images(self):
         """Get a list of image paths."""

@@ -7,73 +7,10 @@ import os
 
 YOUR_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-def apply_image_modifications(img_path, modifications, output_folder="corrected_images"):
-    """Applies image modifications to an image and saves it to the specified output folder.
-
-    Args:
-        img_path (str): Path to the image to modify.
-        modifications (list): A list of modification instructions.
-        output_folder (str): The folder to save the modified image.
-    """
-    try:
-        img = Image.open(img_path)
-        width, height = img.size  # Get image dimensions
-        draw = ImageDraw.Draw(img)
-
-        for mod in modifications:
-            shape = mod['shape']
-            color = mod['color']
-            coords = mod['coordinates']
-            text = mod['text']
-            question_number = mod['question_number']
-            line_width = mod.get('line_width', 2)  # Default line width
-            font_size = mod.get('font_size', 16)  # Default font size
-
-            font = ImageFont.truetype("arial.ttf", font_size)  # Or another font you have
-
-            # Convert relative coordinates to absolute
-            if shape in ["circle", "rectangle", "line"]:
-                abs_coords = []
-                for coord in coords:
-                    if 0 <= coord <= 1: # If it's a ratio
-                        abs_coords.append(coord * (width if coords.index(coord) % 2 == 0 else height)) #X are divided by width, y are divided by height
-                    else:
-                        abs_coords.append(coord) #Use the old data if not a ration
-                coords = abs_coords
-
-            if shape == "circle":
-                # Assuming coords are [center_x, center_y, radius]
-                x, y, r = coords
-                draw.ellipse((x - r, y - r, x + r, y + r), outline=color, width=line_width)
-            elif shape == "rectangle":
-                # Assuming coords are [x1, y1, x2, y2]
-                draw.rectangle(coords, outline=color, width=line_width)
-            elif shape == "line":
-                # Assuming coords are [x1, y1, x2, y2]
-                draw.line(coords, fill=color, width=line_width)
-
-            if text:
-                # Adjust position for text as needed
-                draw.text((coords[0], coords[1] + 10), text, fill=color, font=font)  # Use the font
-
-        # Create the output folder if it doesn't exist
-        os.makedirs(output_folder, exist_ok=True)
-        # Save the modified image to the output folder
-        base_filename = os.path.basename(img_path)  #Get the file name from the path
-        filename, ext = os.path.splitext(base_filename) #Split the name and extension
-        output_path = os.path.join(output_folder, f"{filename}_modified{ext}")
-        img.save(output_path)
-        print(f"Modified image saved as {output_path}")
-
-    except FileNotFoundError:
-        print(f"Error: Image file not found: {img_path}")
-    except Exception as e:
-        print(f"Error applying image modifications: {e}")
-
 
 def grade_answer_gemini(problem_images, answer_images, grading_standards, scoring_difficulty, output_folder="corrected_images", model_name='gemini-1.5-flash'):
     """
-    Grades student answers and generates image modification instructions.
+    Grades student answers, generates image modification instructions, and applies those modifications.
 
     Args:
         problem_images (list of str or bytes): Paths to problem images.
@@ -84,20 +21,18 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
         model_name (str): The name of the Gemini model to use.
 
     Returns:
-        dict: Grading results and image modification instructions.
+        dict: Grading results, and a list of paths to the modified images.
     """
-
     genai.configure(api_key=YOUR_API_KEY)
     # Refresh the model instance with every call
     model = genai.GenerativeModel(model_name)
-
     def load_image(image_data):
         """Helper function to load image data, handling both file paths and bytes."""
         try:
-            if isinstance(image_data, str): # assume it's a path
+            if isinstance(image_data, str):  # assume it's a path
                 return Image.open(image_data)
-            elif isinstance(image_data, bytes): # it's already the image data
-                return Image.open(io.BytesIO(image_data)) # use io.BytesIO to convert bytes to file-like object
+            elif isinstance(image_data, bytes):  # it's already the image data
+                return Image.open(io.BytesIO(image_data))  # use io.BytesIO to convert bytes to file-like object
             else:
                 raise TypeError("Image data must be a file path (string) or image data (bytes).")
         except FileNotFoundError:
@@ -105,14 +40,77 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
         except Exception as e:
             raise Exception(f"Error loading image: {e}")
 
-    try:
-        problem_imgs = [load_image(img) for img in problem_images]
-        answer_imgs = [load_image(img) for img in answer_images]
+    def apply_image_modifications(img, modifications):
+        
+        
+        print("modifications imgs")
+        print(img)
+        """Applies image modifications to a PIL Image object.
 
+        Args:
+            img (PIL.Image.Image): The image to modify.
+            modifications (list): A list of modification instructions.
+        """
+        width, height = img.size  # Get image dimensions
+        draw = ImageDraw.Draw(img)
+
+        for mod in modifications:
+            shape = mod['shape']
+            color = mod['color']
+            coords = mod['coordinates']
+            text = mod['text']
+            line_width = mod.get('line_width', 2)  # Default line width
+            font_size = mod.get('font_size', 16)  # Default font size
+
+            font = ImageFont.truetype("arial.ttf", font_size)  # Or another font you have
+
+            # Convert relative coordinates to absolute
+            if shape in ["circle", "rectangle", "line"]:
+                abs_coords = []
+                for coord in coords:
+                    if 0 <= coord <= 1:  # If it's a ratio
+                        abs_coords.append(
+                            coord * (width if coords.index(coord) % 2 == 0 else height))  # X are divided by width, y are divided by height
+                    else:
+                        abs_coords.append(coord)  # Use the old data if not a ratio
+                coords = abs_coords
+
+            if shape == "circle":
+                # Assuming coords are [center_x, center_y, radius]
+                x, y, r = coords
+                draw.ellipse((x - r, y - r, x + r, y + r), outline=color, width=line_width)
+            elif shape == "rectangle":
+                # Assuming coords are [x1, y1, x2, y2]
+                x0, y0, x1, y1 = coords
+                draw.rectangle((x0, y0, x1, y1), outline=color, width=line_width)
+            elif shape == "line":
+                # Assuming coords are [x1, y1, x2, y2]
+                draw.line(coords, fill=color, width=line_width)
+
+            if text:
+                # Adjust position for text as needed
+                draw.text((coords[0], coords[1] + 10), text, fill=color, font=font)  # Use the font
+        return img
+
+    try:
+        problem_images = json.loads(problem_images)
+        answer_images = json.loads(answer_images)
+        print("QQQQQQQQQ")
+        print(problem_images[0])
+        problem_imgs = [load_image(img) for img in problem_images]
+        print("QQQQQQQQQ2")
+        answer_imgs = [load_image(img) for img in answer_images]
+        
+        
+        print("QQQQQQQQQ2")
         all_scores = []
         all_analyses = []
-        image_modifications = [] # A list to hold modification instructions for each image
+        image_modifications = []  # A list to hold modification instructions for each image
+        modified_image_paths = [] # List to hold paths to modified images
 
+        # Create the output folder if it doesn't exist
+        os.makedirs(output_folder, exist_ok=True)
+        print("QQQQQQQQQ3")
         for i, answer_img in enumerate(answer_imgs):
             prompt = f"""
             You are an automated grader and image modification instructor. Analyze the student's answer sheet page and generate detailed instructions for correcting it.
@@ -125,7 +123,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
             Review the provided images and identify each question *answered on this page*. Use the grading standards to score each question and suggest image annotations. A single page can contain multiple questions; identify and grade all of them. If a question is unanswered, score it as zero.
 
             For each question identified on this page:
-            - Provide a score (0-10) based on the grading standards, taking into account the scoring difficulty. 
+            - Provide a score (0-10) based on the grading standards, taking into account the scoring difficulty.
             The scoring_difficulty for the question is {scoring_difficulty}!!!
             Scoring difficulty means:
 
@@ -147,7 +145,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
             In addition to grading, suggest concise and clear instructions for marking incorrect or incomplete areas on the image (shape, color, coordinates, text). Keep the text for image modifications short and specific. Please output the x,y coordinates in range [0,1], make it a relative position in the picture.
 
             Respond in JSON format with a list of question results and image modification instructions. If you can't create valid JSON, respond with just 0.
-            
+
             ```json
             {{
                 "page_results": [
@@ -175,7 +173,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
             If no questions are answered on this page, respond with 0.
             """
-
+            print("QQQQQQQQQ4")
             PROBLEM_IMAGES_DISPLAY = f"Multiple Problem Images (specify topics in grading standards for best performance)."
             ANSWER_IMAGE_DISPLAY = f"Student Answer Sheet Page {i+1} Image Data: Student's answers to questions from the problem set (this is page {i+1})."
             prompt = prompt.replace("[PROBLEM_IMAGES]", PROBLEM_IMAGES_DISPLAY)
@@ -189,9 +187,10 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                 print(f"Prompt Feedback (Answer Sheet Page {i+1}):", response.prompt_feedback)
 
             response.resolve()
-
+            print("QQQQQQQQQ5")
             try:
                 try:
+                    
                     json_string = response.text.strip()
                     if json_string.startswith("```json"):
                         json_string = json_string[len("```json"):].strip()
@@ -200,58 +199,74 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
                     if json_string == "0":
                         print(f"Answer Sheet Page {i+1}: No answers found on this page.")
-                        image_modifications.append([]) # Append an empty list to indicate no modifications
+                        image_modifications.append([])  # Append an empty list to indicate no modifications
+                        modified_image_paths.append(answer_images[i] if isinstance(answer_images[i], str) else None) #If there is no modification
                         continue
-
+                    print("QQQQQQQQQ6")
                     result = json.loads(json_string)
                     page_results = result.get("page_results")
                     modifications = result.get("image_modifications")  # Get the image modification instructions
                     image_modifications.append(modifications if modifications else [])  # Add modifications, or an empty list if none.
 
-
                     if page_results is None:
                         raise ValueError(f"The response for Answer Sheet Page {i+1} did not contain 'page_results'. Invalid format.")
 
                     for question_result in page_results:
-                         if not isinstance(question_result, dict):
+                        if not isinstance(question_result, dict):
                             print(f"Warning: Expected a dictionary for question_result, got {type(question_result)}. Skipping this result.")
                             continue
-                         score = question_result.get("score")
-                         analysis = question_result.get("analysis")
+                        score = question_result.get("score")
+                        analysis = question_result.get("analysis")
 
-                         if score is None or analysis is None:
+                        if score is None or analysis is None:
                             print(f"Warning: Missing 'score' or 'analysis' for a question. Skipping this question.")
                             continue
 
-                         all_scores.append(score)
-                         all_analyses.append(analysis)
+                        all_scores.append(score)
+                        all_analyses.append(analysis)
+                    print("QQQQQQQQQ7")
 
+                    #Apply image modification
+                    modified_img = apply_image_modifications(answer_img, modifications if modifications else [])
+                    base_filename = os.path.basename(answer_images[i]) if isinstance(answer_images[i], str) else f"modified_image_{i}"  #Get the file name from the path
+                    filename, ext = os.path.splitext(base_filename) if isinstance(answer_images[i], str) else (".png", "")  # Split the name and extension
+                    output_path = os.path.join(output_folder, f"{filename}_modified{ext}")
+                    modified_img.save(output_path)
+                    modified_image_paths.append(output_path)
+                    print(f"Modified image saved as {output_path}")
+
+                    print("QQQQQQQQQ8")
 
                 except json.JSONDecodeError as e:
                     print(f"JSONDecodeError for Answer Sheet Page {i+1}: {e}")
                     print(f"Raw response text for Answer Sheet Page {i+1}: {response.text}")
-                    image_modifications.append([]) # Append empty modification instruction list
+                    image_modifications.append([])  # Append empty modification instruction list
+                    modified_image_paths.append(answer_images[i] if isinstance(answer_images[i], str) else None) #If there is no modification
+
                     if response.text.strip() == "0":
                         all_scores.append(0)
-                        all_analyses.append({"error": f"Gemini API returned 0 for Answer Sheet Page {i+1} due to safety restrictions/errors or because no answers were provided."})
+                        all_analyses.append({
+                            "error": f"Gemini API returned 0 for Answer Sheet Page {i+1} due to safety restrictions/errors or because no answers were provided."})
                     else:
                         all_scores.append(0)
                         all_analyses.append({"error": f"Failed to decode JSON for Answer Sheet Page {i+1}. Raw response needs investigation."})
                 except ValueError as e:
                     print(f"ValueError for Answer Sheet Page {i+1}: {e}")
-                    image_modifications.append([]) # Append empty modification instruction list
+                    image_modifications.append([])  # Append empty modification instruction list
+                    modified_image_paths.append(answer_images[i] if isinstance(answer_images[i], str) else None) #If there is no modification
                     all_scores.append(0)
                     all_analyses.append({"error": str(e)})
 
             except Exception as e:
                 print(f"Unexpected error occurred for Answer Sheet Page {i+1}: {e}")
-                image_modifications.append([]) # Append empty modification instruction list
+                image_modifications.append([])  # Append empty modification instruction list
+                modified_image_paths.append(answer_images[i] if isinstance(answer_images[i], str) else None) #If there is no modification
                 all_scores.append(0)
                 all_analyses.append({"error": f"An unexpected error occurred on Answer Sheet Page {i+1}: {e}"})
 
         # Calculate final score (example - can be adjusted based on grading standards)
         final_score = sum(all_scores)
-
+        print("QQQQQQQQQ8")
         # Generate overall feedback
         feedback_prompt = f"""
         You have graded a student's multi-page test paper. The final score is {final_score}.
@@ -264,13 +279,13 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
         feedback_response = model.generate_content(feedback_prompt)
         feedback_response.resolve()
         overall_feedback = feedback_response.text
-
+        print("RETRN")
         return {
             "scores": all_scores,
             "analyses": all_analyses,
             "final_score": final_score,
             "feedback": overall_feedback,
-            "image_modifications": image_modifications  # Return the modification instructions
+            "modified_images": modified_image_paths  # Return the list of modified image paths
         }
     except FileNotFoundError as e:
         print(e)
@@ -278,6 +293,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+
 
 # Load environment variables from .env file
 # load_dotenv()
@@ -298,8 +314,8 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 #         print(f"An error occurred when setting API Key: {e}")
 #         exit()
 #     # Example Usage
-#     PROBLEM_IMAGES = ["imgs/testPaperA.png"]
-#     ANSWER_IMAGES = ["imgs/testPaperA.png"]  # Using testPaper again for demo
+#     PROBLEM_IMAGES = ["imgs/testPaperB.png"]
+#     ANSWER_IMAGES = ["imgs/testPaperB.png"]  # Using testPaper again for demo
 #     GRADING_STANDARDS = """
 # Question 3: Probability of More Than 2 Cookies (10 points)
 
@@ -373,16 +389,4 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 #         print("Individual Scores:", grading_results['scores'])
 #         print("Analyses:", grading_results['analyses'])
 #         print("Overall Feedback:", grading_results['feedback'])
-#         print("Image Modification Instructions:", grading_results['image_modifications'])
-
-#         # Example of how you might apply the modifications (This part requires PIL and is just an example)
-#         try:
-
-#             for i, modifications in enumerate(grading_results['image_modifications']):
-#                 img_path = ANSWER_IMAGES[i]  # Get the path to the corresponding answer image
-#                 apply_image_modifications(img_path, modifications)
-
-#         except ImportError:
-#             print("PIL is not installed. Install it to apply the image modifications.")
-#         except Exception as e:
-#             print(f"Error applying image modifications: {e}")
+#        print("Modified Image Paths:", grading_results['modified_images'])
