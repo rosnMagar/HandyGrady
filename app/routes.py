@@ -161,7 +161,7 @@ def init_routes(app):
         file_path = os.path.join(current_app.root_path, 'static', *filename.split('/'))
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
         
-    @app.route('/homework/<string:hId>')
+    @app.route('/homework/hId')
     def combined_charts(hId):
 
         homework = Homework.query.get(UUID(hId))
@@ -175,8 +175,8 @@ def init_routes(app):
         
         # Create pie chart
         pie_fig = px.pie(
-            names=["correct","incorrect"],
-            values=[overall_score, 100 - overall_score],
+            names=subjects,
+            values=scores,
             title='Score Distribution',
             hole=0.4,
             color_discrete_sequence=px.colors.sequential.RdBu
@@ -199,12 +199,13 @@ def init_routes(app):
         return render_template('homework.html', pie_html=pie_html, bar_html=bar_html)
     
     
-    @app.route('/grade_homework/<int:homework_id>', methods=['POST'])
+    @app.route('/grade_homework/<string:homework_id>', methods=['POST'])
     @login_required
     def grade_homework(homework_id):
         try:
+            print("try11")
             # Fetch the homework object from the database
-            homework = Homework.query.filter_by(id=homework_id, user_id=current_user.id).first()
+            homework = Homework.query.get(UUID(homework_id))
             
             if not homework:
                 flash('Homework not found or you do not have permission to access it.', 'danger')
@@ -219,7 +220,7 @@ def init_routes(app):
             result = grade_answer_gemini(
                 PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=5
             )
-
+            print("grade_answer_gemini finish~~`a~~~~~~~~~~~~~~")
             # Update the homework object with the returned values
             homework.scores = result['scores']
             homework.analyses = result['analyses']
