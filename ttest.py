@@ -17,6 +17,7 @@ def apply_image_modifications(img_path, modifications, output_folder="corrected_
     """
     try:
         img = Image.open(img_path)
+        width, height = img.size  # Get image dimensions
         draw = ImageDraw.Draw(img)
 
         for mod in modifications:
@@ -29,6 +30,16 @@ def apply_image_modifications(img_path, modifications, output_folder="corrected_
             font_size = mod.get('font_size', 16)  # Default font size
 
             font = ImageFont.truetype("arial.ttf", font_size)  # Or another font you have
+
+            # Convert relative coordinates to absolute
+            if shape in ["circle", "rectangle", "line"]:
+                abs_coords = []
+                for coord in coords:
+                    if 0 <= coord <= 1: # If it's a ratio
+                        abs_coords.append(coord * (width if coords.index(coord) % 2 == 0 else height)) #X are divided by width, y are divided by height
+                    else:
+                        abs_coords.append(coord) #Use the old data if not a ration
+                coords = abs_coords
 
             if shape == "circle":
                 # Assuming coords are [center_x, center_y, radius]
@@ -133,7 +144,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
             The scoring_difficulty for the question is {scoring_difficulty}!!!
 
-            In addition to grading, suggest concise and clear instructions for marking incorrect or incomplete areas on the image (shape, color, coordinates, text). Keep the text for image modifications short and specific.
+            In addition to grading, suggest concise and clear instructions for marking incorrect or incomplete areas on the image (shape, color, coordinates, text). Keep the text for image modifications short and specific. Please output the x,y coordinates in range [0,1], make it a relative position in the picture.
 
             Respond in JSON format with a list of question results and image modification instructions. If you can't create valid JSON, respond with just 0.
             
@@ -151,7 +162,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                     {{
                         "shape": "<shape to draw (e.g., circle, rectangle, line)>",
                         "color": "<color of the shape (e.g., red, blue)>",
-                        "coordinates": [<x1>, <y1>, <x2>, <y2>]  // or [<center_x>, <center_y>, <radius>] for circles
+                        "coordinates": [<x1>, <y1>, <x2>, <y2>]  // or [<center_x>, <center_y>, <radius>] for circles, in ratio range [0,1]
                         "line_width": <integer>,
                         "font_size": <integer>,
                         "text": "<short, clear correction text>",
@@ -287,42 +298,74 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 #         print(f"An error occurred when setting API Key: {e}")
 #         exit()
 #     # Example Usage
-#     PROBLEM_IMAGES = ["imgs/testPaper.png"]
-#     ANSWER_IMAGES = ["imgs/ans1.png", "imgs/ans2.png", "imgs/ans3.png"]  # Using testPaper again for demo
+#     PROBLEM_IMAGES = ["imgs/testPaperA.png"]
+#     ANSWER_IMAGES = ["imgs/testPaperA.png"]  # Using testPaper again for demo
 #     GRADING_STANDARDS = """
-# Grading Criteria:
+# Question 3: Probability of More Than 2 Cookies (10 points)
 
-# Question 1: Reasons for the rise of the Roman Empire(0–10):
+# Concept Understanding (3 points):
 
-# Key Points: Military strength, geography, infrastructure, political structure, economic power, cultural assimilation, strong leadership.
-# 10: Covers all points with examples and depth.
-# 5: Mentions a few points, lacks detail.
-# 0: Fails to address the question.
+# 3 points: Correctly identifies the need to use the complement rule (P(X > 2) = 1 - P(X <= 2)). The use of complement rule must be stated.
 
-# Question 2: Julius Caesar's role in the late Republic(0–10):
+# 0 points: Fails to recognize the correct approach to solve this problem
 
-# Key Points: Military conquests, crossing the Rubicon, reforms, dictatorship, assassination’s impact.
-# 10: Detailed explanation of Caesar’s actions and their consequences.
-# 5: Covers a few points, lacks depth.
-# 0: Minimal or incorrect information.
+# Probability Identification (3 points):
 
-# Question 3: Causes of the fall of the Western Roman Empire(0–10):
+# 2 points: Correctly identifies the values of P(0), P(1), and P(2) from the initial information or uses provided values correctly. Must write P(0), P(1) and P(2).
 
-# Key Points: Political instability, economic issues, military decline, invasions, overexpansion, social/cultural decline.
-# 10: Explains all causes with examples and interactions.
-# 5: Mentions some causes, lacks depth.
-# 0: Fails to address the question.
+# 0 points: Incorrect or missing identification of values.
 
-# Question 4: Roman contributions to law, engineering, and architecture(0–10):
+# Calculation (4 points):
 
-# Key Points: Legal principles, roads/aqueducts, arches/domes, iconic structures (e.g., Colosseum, Pantheon).
-# 10: Covers all areas with examples and significance.
-# 5: Covers one or two areas, vague explanations.
-# 0: Minimal or irrelevant information.
-# Summarized grading: Higher scores = detailed, accurate, and complete answers; lower scores = vague, incomplete, or incorrect.
-#     """
+# 4 points: Calculates P(X <= 2) = P(0) + P(1) + P(2), then calculates P(X > 2) correctly. If any calculation is wrong, deduct 2 points, must use the correct format.
 
-#     grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=10)
+# 0 points: Incorrect calculation or missing final answer.
+
+# Expected Answer Format:
+
+# P(X > 2) = 1 - [P(0) + P(1) + P(2)]
+#         = 1 - [0.7 + 0.21 + 0.063]
+#         = 1 - 0.973
+#         = 0.027
+# Use code with caution.
+# Question 4: Geometric Random Variable - Mean, Variance, and Standard Deviation (10 points)
+
+# Correct Formulas (3 points):
+
+# 3 points: States the correct formulas for the mean (E[X] = (1-p)/p), variance (V[X] = (1-p)/p^2), and standard deviation (σ = sqrt(V[X])) of a geometric random variable. Must be correct formula with right expression.
+
+# 0 points: Incorrect or missing formulas.
+
+# Correct Substitution (3 points):
+
+# 3 points: Correctly identifies and substitutes the value of 'p' (probability of success) from the context into the formulas.
+# Assume p=0.7
+
+# 0 points: Incorrect or missing substitution.
+
+# Accurate Calculations (4 points):
+
+# 4 points: Correctly calculates the mean, variance, and standard deviation based on the formulas and 'p' value. If one expression are wrong, 2 point deduction.
+
+# 0 points: Incorrect calculation or missing final answer.
+
+# Expected Answer Format (Using p = 0.7):
+
+# E[X] = (1-0.7)/0.7 = 0.3/0.7 = 3/7 ≈ 0.428
+# V[X] = (1-0.7)/(0.7)^2 = 0.3 / 0.49 ≈ 0.612
+# σ = sqrt(V[X]) = sqrt(0.612) ≈ 0.782
+# Use code with caution.
+# General Notes for Both Questions:
+
+# Partial Credit: Partial credit may be awarded for showing the correct steps, even if the final answer is incorrect due to a minor arithmetic error.
+
+# Units: The inclusion or omission of units (e.g., "cookies") will not be penalized.
+
+# Rounding: Minor differences in rounding will generally not be penalized, as long as the student's work is consistent.
+
+# Presentation: While neatness is appreciated, the focus is on the correctness of the solution.Illegible work will be assessed at zero.    """
+
+#     grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=5)
 
 #     if grading_results:
 #         print("Grading Results:")
@@ -337,7 +380,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
 #             for i, modifications in enumerate(grading_results['image_modifications']):
 #                 img_path = ANSWER_IMAGES[i]  # Get the path to the corresponding answer image
-#                 >>>>>apply_image_modifications(img_path, modifications)<<<<<
+#                 apply_image_modifications(img_path, modifications)
 
 #         except ImportError:
 #             print("PIL is not installed. Install it to apply the image modifications.")
