@@ -7,6 +7,59 @@ import os
 
 YOUR_API_KEY = os.environ.get('GEMINI_API_KEY')
 
+def apply_image_modifications(img_path, modifications, output_folder="corrected_images"):
+    """Applies image modifications to an image and saves it to the specified output folder.
+
+    Args:
+        img_path (str): Path to the image to modify.
+        modifications (list): A list of modification instructions.
+        output_folder (str): The folder to save the modified image.
+    """
+    try:
+        img = Image.open(img_path)
+        draw = ImageDraw.Draw(img)
+
+        for mod in modifications:
+            shape = mod['shape']
+            color = mod['color']
+            coords = mod['coordinates']
+            text = mod['text']
+            question_number = mod['question_number']
+            line_width = mod.get('line_width', 2)  # Default line width
+            font_size = mod.get('font_size', 16)  # Default font size
+
+            font = ImageFont.truetype("arial.ttf", font_size)  # Or another font you have
+
+            if shape == "circle":
+                # Assuming coords are [center_x, center_y, radius]
+                x, y, r = coords
+                draw.ellipse((x - r, y - r, x + r, y + r), outline=color, width=line_width)
+            elif shape == "rectangle":
+                # Assuming coords are [x1, y1, x2, y2]
+                draw.rectangle(coords, outline=color, width=line_width)
+            elif shape == "line":
+                # Assuming coords are [x1, y1, x2, y2]
+                draw.line(coords, fill=color, width=line_width)
+
+            if text:
+                # Adjust position for text as needed
+                draw.text((coords[0], coords[1] + 10), text, fill=color, font=font)  # Use the font
+
+        # Create the output folder if it doesn't exist
+        os.makedirs(output_folder, exist_ok=True)
+        # Save the modified image to the output folder
+        base_filename = os.path.basename(img_path)  #Get the file name from the path
+        filename, ext = os.path.splitext(base_filename) #Split the name and extension
+        output_path = os.path.join(output_folder, f"{filename}_modified{ext}")
+        img.save(output_path)
+        print(f"Modified image saved as {output_path}")
+
+    except FileNotFoundError:
+        print(f"Error: Image file not found: {img_path}")
+    except Exception as e:
+        print(f"Error applying image modifications: {e}")
+
+
 def grade_answer_gemini(problem_images, answer_images, grading_standards, scoring_difficulty, output_folder="corrected_images", model_name='gemini-1.5-flash'):
     """
     Grades student answers and generates image modification instructions.
@@ -216,118 +269,77 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
         return None
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
 
-if __name__ == '__main__':
-    # Example Usage
-    PROBLEM_IMAGES = ["imgs/testPaper.png"]
-    ANSWER_IMAGES = ["imgs/ans1.png", "imgs/ans2.png", "imgs/ans3.png"]  # Using testPaper again for demo
-    GRADING_STANDARDS = """
-Grading Criteria:
+# if __name__ == '__main__':
+#     # Check API key
+#     try:
+#         if not YOUR_API_KEY:
+#             while True:
+#                 api_key = input("Please enter your Gemini API key: ")
+#                 if api_key:
+#                     os.environ['GEMINI_API_KEY'] = api_key
+#                     YOUR_API_KEY = api_key
+#                     break
+#                 else:
+#                     print("API key cannot be empty. Please try again.")
+#     except Exception as e:
+#         print(f"An error occurred when setting API Key: {e}")
+#         exit()
+#     # Example Usage
+#     PROBLEM_IMAGES = ["imgs/testPaper.png"]
+#     ANSWER_IMAGES = ["imgs/ans1.png", "imgs/ans2.png", "imgs/ans3.png"]  # Using testPaper again for demo
+#     GRADING_STANDARDS = """
+# Grading Criteria:
 
-Question 1: Reasons for the rise of the Roman Empire(0–10):
+# Question 1: Reasons for the rise of the Roman Empire(0–10):
 
-Key Points: Military strength, geography, infrastructure, political structure, economic power, cultural assimilation, strong leadership.
-10: Covers all points with examples and depth.
-5: Mentions a few points, lacks detail.
-0: Fails to address the question.
+# Key Points: Military strength, geography, infrastructure, political structure, economic power, cultural assimilation, strong leadership.
+# 10: Covers all points with examples and depth.
+# 5: Mentions a few points, lacks detail.
+# 0: Fails to address the question.
 
-Question 2: Julius Caesar's role in the late Republic(0–10):
+# Question 2: Julius Caesar's role in the late Republic(0–10):
 
-Key Points: Military conquests, crossing the Rubicon, reforms, dictatorship, assassination’s impact.
-10: Detailed explanation of Caesar’s actions and their consequences.
-5: Covers a few points, lacks depth.
-0: Minimal or incorrect information.
+# Key Points: Military conquests, crossing the Rubicon, reforms, dictatorship, assassination’s impact.
+# 10: Detailed explanation of Caesar’s actions and their consequences.
+# 5: Covers a few points, lacks depth.
+# 0: Minimal or incorrect information.
 
-Question 3: Causes of the fall of the Western Roman Empire(0–10):
+# Question 3: Causes of the fall of the Western Roman Empire(0–10):
 
-Key Points: Political instability, economic issues, military decline, invasions, overexpansion, social/cultural decline.
-10: Explains all causes with examples and interactions.
-5: Mentions some causes, lacks depth.
-0: Fails to address the question.
+# Key Points: Political instability, economic issues, military decline, invasions, overexpansion, social/cultural decline.
+# 10: Explains all causes with examples and interactions.
+# 5: Mentions some causes, lacks depth.
+# 0: Fails to address the question.
 
-Question 4: Roman contributions to law, engineering, and architecture(0–10):
+# Question 4: Roman contributions to law, engineering, and architecture(0–10):
 
-Key Points: Legal principles, roads/aqueducts, arches/domes, iconic structures (e.g., Colosseum, Pantheon).
-10: Covers all areas with examples and significance.
-5: Covers one or two areas, vague explanations.
-0: Minimal or irrelevant information.
-Summarized grading: Higher scores = detailed, accurate, and complete answers; lower scores = vague, incomplete, or incorrect.
-    """
+# Key Points: Legal principles, roads/aqueducts, arches/domes, iconic structures (e.g., Colosseum, Pantheon).
+# 10: Covers all areas with examples and significance.
+# 5: Covers one or two areas, vague explanations.
+# 0: Minimal or irrelevant information.
+# Summarized grading: Higher scores = detailed, accurate, and complete answers; lower scores = vague, incomplete, or incorrect.
+#     """
 
-    grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=10)
+#     grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=10)
 
-    if grading_results:
-        print("Grading Results:")
-        print(f"Final Score: {grading_results['final_score']}")
-        print("Individual Scores:", grading_results['scores'])
-        print("Analyses:", grading_results['analyses'])
-        print("Overall Feedback:", grading_results['feedback'])
-        print("Image Modification Instructions:", grading_results['image_modifications'])
+#     if grading_results:
+#         print("Grading Results:")
+#         print(f"Final Score: {grading_results['final_score']}")
+#         print("Individual Scores:", grading_results['scores'])
+#         print("Analyses:", grading_results['analyses'])
+#         print("Overall Feedback:", grading_results['feedback'])
+#         print("Image Modification Instructions:", grading_results['image_modifications'])
 
-        # Example of how you might apply the modifications (This part requires PIL and is just an example)
-        try:
-            from PIL import Image, ImageDraw, ImageFont  # Import ImageFont
-            
-            # Create the output folder if it doesn't exist
-            output_folder = "corrected_images"
-            os.makedirs(output_folder, exist_ok=True)
+#         # Example of how you might apply the modifications (This part requires PIL and is just an example)
+#         try:
 
+#             for i, modifications in enumerate(grading_results['image_modifications']):
+#                 img_path = ANSWER_IMAGES[i]  # Get the path to the corresponding answer image
+#                 >>>>>apply_image_modifications(img_path, modifications)<<<<<
 
-            for i, modifications in enumerate(grading_results['image_modifications']):
-                if modifications:
-                    img_path = ANSWER_IMAGES[i]  # Get the path to the corresponding answer image
-                    img = Image.open(img_path)
-                    draw = ImageDraw.Draw(img)
-
-                    for mod in modifications:
-                        shape = mod['shape']
-                        color = mod['color']
-                        coords = mod['coordinates']
-                        text = mod['text']
-                        question_number = mod['question_number']
-                        line_width = mod.get('line_width', 2)  # Default line width
-                        font_size = mod.get('font_size', 16) # Default font size
-
-                        font = ImageFont.truetype("arial.ttf", font_size)  # Or another font you have
-
-                        if shape == "circle":
-                            # Assuming coords are [center_x, center_y, radius]
-                            x, y, r = coords
-                            draw.ellipse((x - r, y - r, x + r, y + r), outline=color, width=line_width)
-                        elif shape == "rectangle":
-                            # Assuming coords are [x1, y1, x2, y2]
-                            draw.rectangle(coords, outline=color, width=line_width)
-                        elif shape == "line":
-                            # Assuming coords are [x1, y1, x2, y2]
-                            draw.line(coords, fill=color, width=line_width)
-
-                        if text:
-                            # Adjust position for text as needed
-                            draw.text((coords[0], coords[1] + 10), text, fill=color, font=font) # Use the font
-
-                    # Save the modified image to the output folder
-                    output_path = os.path.join(output_folder, f"modified_ans{i+1}.png")
-                    img.save(output_path)
-                    print(f"Modified image saved as {output_path}")
-
-        except ImportError:
-            print("PIL is not installed. Install it to apply the image modifications.")
-        except Exception as e:
-            print(f"Error applying image modifications: {e}")
-#add a step before running the code to check if the API key is valid, and throw a clear error for the user, or get the user to input the api key. use while loop and if statement to make the check. and in the main function. use try except to catch this error.
-"""
-try:
-    if not YOUR_API_KEY:
-        while True:
-            api_key = input("Please enter your Gemini API key: ")
-            if api_key:
-                os.environ['GEMINI_API_KEY'] = api_key
-                YOUR_API_KEY = api_key
-                break
-            else:
-                print("API key cannot be empty. Please try again.")
-except Exception as e:
-    print(f"An error occurred when setting API Key: {e}")
-    exit()
-"""
+#         except ImportError:
+#             print("PIL is not installed. Install it to apply the image modifications.")
+#         except Exception as e:
+#             print(f"Error applying image modifications: {e}")
