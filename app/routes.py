@@ -183,14 +183,18 @@ def init_routes(app):
         
     @app.route('/homework/<string:hId>')
     def combined_charts(hId):
-
         homework = Homework.query.get(UUID(hId))
-        print(homework.final_score)
+
+
+        print("ZZZZ")
+        print(type(homework.scores))
 
         # Sample data
-        subjects = ["Math", "Science", "History", "English"]
-        scores = [90, 85, 78, 88]
-
+        subjects = [f"problem{i}" for i in range(1, len(eval(homework.scores)) + 1)]
+        scores = eval(homework.scores)
+        
+        print(subjects)
+        print(scores)
         overall_score = homework.final_score
         
         # Create pie chart
@@ -249,7 +253,7 @@ def init_routes(app):
             homework.analysis = str(result['analyses'])
             homework.final_score = result['final_score']
             homework.final_full_score = result['final_full_score']
-            
+
 
             # Save modified image paths (if applicable)
             if 'modified_images' in result and result['modified_images']:
