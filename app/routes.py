@@ -165,13 +165,13 @@ def init_routes(app):
     def combined_charts(hId):
 
         homework = Homework.query.get(UUID(hId))
-        print(homework.id)
+        print(homework.final_score)
 
         # Sample data
         subjects = ["Math", "Science", "History", "English"]
         scores = [90, 85, 78, 88]
 
-        overall_score = 95
+        overall_score = homework.final_score
         
         # Create pie chart
         pie_fig = px.pie(
