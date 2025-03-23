@@ -10,6 +10,7 @@ import pandas as pd
 import json
 
 from uuid import uuid4
+from uuid import UUID
 import os
 import json
 import shutil
@@ -160,11 +161,11 @@ def init_routes(app):
         file_path = os.path.join(current_app.root_path, 'static', *filename.split('/'))
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
         
-    @app.route('/homework/hId')
+    @app.route('/homework/<string:hId>')
     def combined_charts(hId):
 
-        homework = User.query.filter_by(id=hId).first()
-        print(homework)
+        homework = Homework.query.get(UUID(hId))
+        print(homework.id)
 
         # Sample data
         subjects = ["Math", "Science", "History", "English"]
@@ -195,7 +196,7 @@ def init_routes(app):
         pie_html = pie_fig.to_html(full_html=False)
         bar_html = bar_fig.to_html(full_html=False)
         
-        return render_template('homework.html', chart_html=chart_html)
+        return render_template('homework.html', pie_html=pie_html, bar_html=bar_html)
     
     
     @app.route('/grade_homework/<int:homework_id>', methods=['POST'])
