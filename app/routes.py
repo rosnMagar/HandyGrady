@@ -161,8 +161,12 @@ def init_routes(app):
         file_path = os.path.join(current_app.root_path, 'static', *filename.split('/'))
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
         
-    @app.route('/homework')
-    def combined_charts():
+    @app.route('/homework/hId')
+    def combined_charts(hId):
+
+        homework = User.query.filter_by(id=hId).first()
+        print(homework)
+
         # Sample data
         subjects = ["Math", "Science", "History", "English"]
         scores = [90, 85, 78, 88]
@@ -190,7 +194,7 @@ def init_routes(app):
         pie_html = pie_fig.to_html(full_html=False)
         bar_html = bar_fig.to_html(full_html=False)
         
-        return render_template('homework.html', chart_html=chart_html)
+        return render_template('homework.html', pie_html=pie_html, bar_html=bar_html)
     
     
     @app.route('/grade_homework/<string:homework_id>', methods=['POST'])
