@@ -115,8 +115,8 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
         all_analyses = []
         image_modifications = []  # A list to hold modification instructions for each image
         modified_image_paths = [] # List to hold paths to modified images
-        full_score_list = []  # To store the complete results (score, analysis, question) for each question
-        final_full_score = {} # To store accumulated results question by question
+        full_score_list = {}  # To store the full scores for each question
+        final_full_score = {} # To store the full score for the test
 
         # Create the output folder if it doesn't exist
         os.makedirs(output_folder, exist_ok=True)
@@ -160,6 +160,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                     {{
                         "question_number": <integer>,
                         "score": <integer>,
+                        "full_score": <integer>,
                         "analysis": "<overall analysis of the answer> Considering that the current difficulty is {scoring_difficulty}, the score should be...",
                     }},
                     ...
@@ -224,6 +225,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                             print(f"Warning: Expected a dictionary for question_result, got {type(question_result)}. Skipping this result.")
                             continue
                         score = question_result.get("score")
+                        full_score = question_result.get("full_score")
                         analysis = question_result.get("analysis")
                         question_number = question_result.get("question_number")
 
@@ -232,22 +234,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                             continue
 
                         all_scores.append(score)
-                        all_analyses.append(analysis)
-                        full_score_list.append({ # Add the full question data
-                            "question_number": question_number,
-                            "score": score,
-                            "analysis": analysis
-                        })
-
-                        # Accumulate results for final_full_score
-                        if question_number not in final_full_score:
-                            final_full_score[question_number] = {
-                                "scores": [score],
-                                "analyses": [analysis]
-                            }
-                        else:
-                            final_full_score[question_number]["scores"].append(score)
-                            final_full_score[question_number]["analyses"].append(analysis)
+                        full_score_list.append(full_score)
 
                     print("QQQQQQQQQ7")
 
@@ -270,16 +257,19 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
                     if response.text.strip() == "0":
                         all_scores.append(0)
+                        # Don't accumulate in full_score_list because there are no scores
                         all_analyses.append({
                             "error": f"Gemini API returned 0 for Answer Sheet Page {i+1} due to safety restrictions/errors or because no answers were provided."})
                     else:
                         all_scores.append(0)
+                         # Don't accumulate in full_score_list because there are no scores
                         all_analyses.append({"error": f"Failed to decode JSON for Answer Sheet Page {i+1}. Raw response needs investigation."})
                 except ValueError as e:
                     print(f"ValueError for Answer Sheet Page {i+1}: {e}")
                     image_modifications.append([])  # Append empty modification instruction list
                     modified_image_paths.append(answer_images[i] if isinstance(answer_images[i], str) else None) #If there is no modification
                     all_scores.append(0)
+                     # Don't accumulate in full_score_list because there are no scores
                     all_analyses.append({"error": str(e)})
 
             except Exception as e:
@@ -287,10 +277,13 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                 image_modifications.append([])  # Append empty modification instruction list
                 modified_image_paths.append(answer_images[i] if isinstance(answer_images[i], str) else None) #If there is no modification
                 all_scores.append(0)
+                 # Don't accumulate in full_score_list because there are no scores
                 all_analyses.append({"error": f"An unexpected error occurred on Answer Sheet Page {i+1}: {e}"})
 
         # Calculate final score (example - can be adjusted based on grading standards)
         final_score = sum(all_scores)
+        final_full_score=sum(full_score_list)
+
         print("QQQQQQQQQ8")
         # Generate overall feedback
         feedback_prompt = f"""
