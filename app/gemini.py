@@ -2,10 +2,9 @@ import google.generativeai as genai
 from PIL import Image, ImageDraw, ImageFont  # Import ImageFont
 import io
 import json
-from dotenv import load_dotenv
 import os
-from flask import current_app
 
+# Assumes GEMINI_API_KEY is in your environment
 YOUR_API_KEY = os.environ.get('GEMINI_API_KEY')
 
 
@@ -50,8 +49,8 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
             raise Exception(f"Error loading image: {e}")
 
     def apply_image_modifications(img, modifications):
-        
-        
+
+
         print("modifications imgs")
         print(img)
         """Applies image modifications to a PIL Image object.
@@ -109,13 +108,15 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
         problem_imgs = [load_image(img) for img in problem_images]
         print("QQQQQQQQQ2")
         answer_imgs = [load_image(img) for img in answer_images]
-        
-        
+
+
         print("QQQQQQQQQ2")
         all_scores = []
         all_analyses = []
         image_modifications = []  # A list to hold modification instructions for each image
         modified_image_paths = [] # List to hold paths to modified images
+        full_score_list = []  # To store the complete results (score, analysis, question) for each question
+        final_full_score = {} # To store accumulated results question by question
 
         # Create the output folder if it doesn't exist
         os.makedirs(output_folder, exist_ok=True)
@@ -140,10 +141,8 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                 *Example: For Question Reasons for the rise of the Roman Empire, a score of 10 would require discussing Military strength, geography, infrastructure, political structure, economic power, cultural assimilation, and strong leadership comprehensively with specifics for each. Omitting even one would lower the score.*
 
             *   **If the scoring difficulty is 5:** The grading is not hard. To achieve full score, the student needs to demonstrate a general understanding of the topic. The answer needs to be reasonably related to the key points, it does not need to be in the grading standers but highly resonable, single mistakes or missing can be ignored. It's easy to get high score even the answer is partial correct.
-                *Example: For Question Reasons for the rise of the Roman Empire, a high score could be given even if the answer only discusses "military strength" and "geography". similar things like technology and culture can also get some score as long as it's not logically wrong, but need more explanation to get full *
 
             *   **If the scoring difficulty is 1:** The grading is very lenient. To achieve full score, the student needs only to demonstrate a general understanding of the topic, as long as they don't provide fake truth or logical fallacies. The answer needs to be only reasonably related to the topic, it does not need to be in the grading standers, some mistakes or missing can be ignored. It's easy to get full score even the answer is correct but totally different from the stander one.
-                *Example: For Question Reasons for the rise of the Roman Empire, a high score could be given even if the answer only discusses "military strength" and "geography". similar things like technology and culture can also get full score as long as it's not logically wrong*
 
             *   **If the scoring difficulty is between 2 and 9:** The grading falls on a spectrum between these two extremes. Higher numbers mean stricter grading, and lower numbers mean more lenient grading. Use your best judgement to assign the score.
 
@@ -199,7 +198,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
             print("QQQQQQQQQ5")
             try:
                 try:
-                    
+
                     json_string = response.text.strip()
                     if json_string.startswith("```json"):
                         json_string = json_string[len("```json"):].strip()
@@ -226,6 +225,7 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
                             continue
                         score = question_result.get("score")
                         analysis = question_result.get("analysis")
+                        question_number = question_result.get("question_number")
 
                         if score is None or analysis is None:
                             print(f"Warning: Missing 'score' or 'analysis' for a question. Skipping this question.")
@@ -233,6 +233,22 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
                         all_scores.append(score)
                         all_analyses.append(analysis)
+                        full_score_list.append({ # Add the full question data
+                            "question_number": question_number,
+                            "score": score,
+                            "analysis": analysis
+                        })
+
+                        # Accumulate results for final_full_score
+                        if question_number not in final_full_score:
+                            final_full_score[question_number] = {
+                                "scores": [score],
+                                "analyses": [analysis]
+                            }
+                        else:
+                            final_full_score[question_number]["scores"].append(score)
+                            final_full_score[question_number]["analyses"].append(analysis)
+
                     print("QQQQQQQQQ7")
 
                     #Apply image modification
@@ -294,14 +310,18 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
             "analyses": all_analyses,
             "final_score": final_score,
             "feedback": overall_feedback,
-            "modified_images": modified_image_paths  # Return the list of modified image paths
+            "modified_images": modified_image_paths,  # Return the list of modified image paths
+            "full_score_list": full_score_list,  # Return the full score list
+            "final_full_score": final_full_score # Return the accumulated question data
         })
         return {
             "scores": all_scores,
             "analyses": all_analyses,
             "final_score": final_score,
             "feedback": overall_feedback,
-            "modified_images": modified_image_paths  # Return the list of modified image paths
+            "modified_images": modified_image_paths,  # Return the list of modified image paths
+            "full_score_list": full_score_list,  # Return the full score list
+            "final_full_score": final_full_score # Return the accumulated question data
         }
     except FileNotFoundError as e:
         print(e)
@@ -405,4 +425,6 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 #         print("Individual Scores:", grading_results['scores'])
 #         print("Analyses:", grading_results['analyses'])
 #         print("Overall Feedback:", grading_results['feedback'])
-#        print("Modified Image Paths:", grading_results['modified_images'])
+#         print("Modified Image Paths:", grading_results['modified_images'])
+#         print("Full Score List:", grading_results['full_score_list']) # Print the full score list
+#         print("Final Full Score:", grading_results['final_full_score']) # Print the accumulated question data
