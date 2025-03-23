@@ -9,8 +9,15 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'super-secret-key-@1234'
     
     # Database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///app.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///app.db?check_same_thread=False'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    WTF_CSRF_ENABLED = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 1,  # Limit the pool size to 1
+        'max_overflow': 0,  # Disable overflow
+        'pool_timeout': 30,  # Timeout for acquiring a connection
+        'pool_pre_ping': True,  # Enable connection health checks
+    }
     
     # Email (optional for future password reset)
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
@@ -22,3 +29,6 @@ class Config:
     # Application
     FLASK_APP = os.environ.get('FLASK_APP', 'app.py')
     FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
+
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    UPLOAD_EXTENSIONS =  ['.jpg', '.jpeg', '.png', '.gif']
