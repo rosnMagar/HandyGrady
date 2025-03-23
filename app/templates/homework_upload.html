@@ -56,6 +56,7 @@
                 <p class="text-gray-600">{{ homework.grading_standard }}</p>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                     {% for image_path in homework.get_images() %}
+                        {{image_path}}
                         <div class="relative aspect-square">
                             <img src="{{ url_for('uploaded_file', filename=image_path.replace('\\', '/')) }}" 
                                 class="w-full h-full object-cover rounded-lg border border-gray-200"

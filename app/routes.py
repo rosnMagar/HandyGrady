@@ -125,11 +125,18 @@ def init_routes(app):
             # Process uploaded images
             if form.images.data:
                 files = form.images.data if isinstance(form.images.data, list) else [form.images.data]
-                print("Files:::", files)
-                for image in files:
-                    if image.filename:  # Check if a file was uploaded
-                        # Save the image and store its path
+                print(f"Processing {len(files)} files")  # Log number of files
+                
+                for idx, image in enumerate(files):
+                    try:
+                        if not image or image.filename == '':
+                            print(f"Skipping empty file at index {idx}")
+                            continue
+
                         filename = secure_filename(image.filename)
+                        if not filename:
+                            raise ValueError(f"Invalid filename at index {idx}")
+
                         unique_name = f"{uuid4().hex}_{filename}"
                         upload_dir = os.path.join(
                             current_app.root_path,
@@ -137,16 +144,28 @@ def init_routes(app):
                             str(current_user.id),
                             str(homework.id)
                         )
-                        os.makedirs(upload_dir, exist_ok=True)  # Create directory if it doesn't exist
+                        
+                        os.makedirs(upload_dir, exist_ok=True)
                         file_path = os.path.join(upload_dir, unique_name)
                         image.save(file_path)
-
-                        relative_path = '/'.join(['uploads', str(current_user.id), str(homework.id), unique_name])
+                        print(f"Saved file {idx + 1}: {file_path}")  # Log success
+                        
+                        relative_path = '/'.join([
+                            'uploads', 
+                            str(current_user.id), 
+                            str(homework.id), 
+                            unique_name
+                        ])
                         homework.add_image(relative_path)
+                        print(f"Added path {idx + 1}: {relative_path}")  # Log path addition
+            
+                    except Exception as e:
+                        print(f"Error processing file {idx + 1}: {str(e)}")
+                        continue  # Skip problematic files
 
-            db.session.commit()
-            flash('Homework created successfully!', 'success')
-            return redirect(url_for('homework_upload'))
+                db.session.commit()
+                flash('Homework created successfully!', 'success')
+                return redirect(url_for('homework_upload'))
 
         except Exception as e:
             db.session.rollback()
