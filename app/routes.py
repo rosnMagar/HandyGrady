@@ -159,18 +159,34 @@ def init_routes(app):
         # Convert forward slashes to the system's path separator
         file_path = os.path.join(current_app.root_path, 'static', *filename.split('/'))
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
-    
+        
     @app.route('/homework')
-    def index():
+    def combined_charts():
         # Sample data
-        score = 80
-        df = pd.DataFrame({
-            "Subject": ["Gained", "Lost"],
-            "Score": [score, 100 - score]
-        })
+        subjects = ["Math", "Science", "History", "English"]
+        scores = [90, 85, 78, 88]
         
-        # Create Plotly chart
-        fig = px.pie(df, names='Subject', values='Score', hole=0.5)
-        chart_html = fig.to_html(full_html=False)
+        # Create pie chart
+        pie_fig = px.pie(
+            names=subjects,
+            values=scores,
+            title='Score Distribution',
+            hole=0.4,
+            color_discrete_sequence=px.colors.sequential.RdBu
+        )
         
-        return render_template('homework.html', chart_html=chart_html)
+        # Create bar chart
+        bar_fig = px.bar(
+            x=subjects,
+            y=scores,
+            title='Each Scores',
+            labels={'x': 'Subject', 'y': 'Score'},
+            color=subjects,
+            text_auto=True
+        )
+        
+        # Convert figures to HTML
+        pie_html = pie_fig.to_html(full_html=False)
+        bar_html = bar_fig.to_html(full_html=False)
+        
+        return render_template('homework.html', pie_html=pie_html, bar_html=bar_html)
