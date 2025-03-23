@@ -1,6 +1,7 @@
 from . import bcrypt, db
 from .models import User, Homework
 from .forms import RegistrationForm, LoginForm, HomeworkForm
+from .gemini_call.gemini import grade_answer_gemini
 
 from flask import redirect, url_for, request, flash, render_template, abort, send_from_directory, current_app
 from flask_login import current_user, login_user, login_required, logout_user
@@ -194,4 +195,47 @@ def init_routes(app):
         pie_html = pie_fig.to_html(full_html=False)
         bar_html = bar_fig.to_html(full_html=False)
         
-        return render_template('homework.html', pie_html=pie_html, bar_html=bar_html)
+        return render_template('homework.html', chart_html=chart_html)
+    
+    
+    @app.route('/grade_homework/<int:homework_id>', methods=['POST'])
+    @login_required
+    def grade_homework(homework_id):
+        try:
+            # Fetch the homework object from the database
+            homework = Homework.query.filter_by(id=homework_id, user_id=current_user.id).first()
+            
+            if not homework:
+                flash('Homework not found or you do not have permission to access it.', 'danger')
+                return redirect(url_for('homework_upload'))
+
+            # Fetch the relevant data for grading
+            PROBLEM_IMAGES = homework.problem_images  # Replace with the actual attribute storing problem images
+            ANSWER_IMAGES = homework.answer_images  # Replace with the actual attribute storing answer images
+            GRADING_STANDARDS = homework.grading_standard  # Replace with the attribute storing grading standards
+
+            # Call the `grade_answer_gemini` function
+            result = grade_answer_gemini(
+                PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=5
+            )
+
+            # Update the homework object with the returned values
+            homework.scores = result['scores']
+            homework.analyses = result['analyses']
+            homework.final_score = result['final_score']
+            homework.feedback = result['feedback']
+
+            # Save modified image paths (if applicable)
+            if 'modified_images' in result and result['modified_images']:
+                homework.modified_images = result['modified_images']  # Update homework with the paths
+
+            # Commit the changes to the database
+            db.session.commit()
+
+            flash('Homework graded successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            print("Error during grading:", str(e))  # Log the error for debugging
+            flash(f'Error during grading: {str(e)}', 'danger')
+
+        return redirect(url_for('homework_upload'))
