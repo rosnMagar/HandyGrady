@@ -1,7 +1,7 @@
 from . import bcrypt, db
 from .models import User, Homework
 from .forms import RegistrationForm, LoginForm, HomeworkForm
-from .gemini_call.gemini import grade_answer_gemini
+from .gemini import grade_answer_gemini
 
 from flask import redirect, url_for, request, flash, render_template, abort, send_from_directory, current_app
 from flask_login import current_user, login_user, login_required, logout_user
@@ -241,6 +241,9 @@ def init_routes(app):
                 PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=5
             )
             print("grade_answer_gemini finish~~`a~~~~~~~~~~~~~~")
+            print(result)
+            
+            print("Grading Results OVER")
             # Update the homework object with the returned values
             homework.scores = result['scores']
             homework.analyses = result['analyses']
