@@ -4,6 +4,7 @@ import io
 import json
 from dotenv import load_dotenv
 import os
+from flask import current_app
 
 YOUR_API_KEY = os.environ.get('GEMINI_API_KEY')
 
@@ -93,6 +94,12 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
     def load_image(image_data):
         """Helper function to load image data, handling both file paths and bytes."""
+
+        # image_data = os.path.join(
+        #     current_app.root_path,  # Path to your Flask app root
+        #     image_data
+        # )
+
         try:
             if isinstance(image_data, str): # assume it's a path
                 return Image.open(image_data)

@@ -24,7 +24,7 @@ class Homework(db.Model):
     image_modifications = db.Column(db.Text, nullable=False, default='[]')
     analysis = db.Column(db.Text, nullable=False, default='[]')
     final_score = db.Column(db.Float, nullable=False, default=0.0)
-    feedback = db.Column(db.Text, nullable=False, default="")
+    scores = db.Column(db.Text, nullable=False, default="")
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('user.id'), nullable=False)
     graded = db.Column(db.Boolean, nullable=False, default=False)
 
