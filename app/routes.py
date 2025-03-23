@@ -248,6 +248,8 @@ def init_routes(app):
             homework.scores = str(result['scores'])
             homework.analysis = str(result['analyses'])
             homework.final_score = result['final_score']
+            homework.final_full_score = result['final_full_score']
+            
 
             # Save modified image paths (if applicable)
             if 'modified_images' in result and result['modified_images']:
