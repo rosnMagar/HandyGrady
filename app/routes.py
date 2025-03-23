@@ -190,7 +190,10 @@ def init_routes(app):
         pie_html = pie_fig.to_html(full_html=False)
         bar_html = bar_fig.to_html(full_html=False)
         
-        return render_template('homework.html', chart_html=chart_html)@app.route('/grade_homework/<int:homework_id>', methods=['POST'])
+        return render_template('homework.html', chart_html=chart_html)
+    
+    
+    @app.route('/grade_homework/<int:homework_id>', methods=['POST'])
     @login_required
     def grade_homework(homework_id):
         try:
