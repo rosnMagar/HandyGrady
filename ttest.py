@@ -288,91 +288,91 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
 
 
 
-# if __name__ == '__main__':
-#     # Check API key
-#     try:
-#         if not YOUR_API_KEY:
-#             while True:
-#                 api_key = input("Please enter your Gemini API key: ")
-#                 if api_key:
-#                     os.environ['GEMINI_API_KEY'] = api_key
-#                     YOUR_API_KEY = api_key
-#                     break
-#                 else:
-#                     print("API key cannot be empty. Please try again.")
-#     except Exception as e:
-#         print(f"An error occurred when setting API Key: {e}")
-#         exit()
+if __name__ == '__main__':
+    # Check API key
+    try:
+        if not YOUR_API_KEY:
+            while True:
+                api_key = input("Please enter your Gemini API key: ")
+                if api_key:
+                    os.environ['GEMINI_API_KEY'] = api_key
+                    YOUR_API_KEY = api_key
+                    break
+                else:
+                    print("API key cannot be empty. Please try again.")
+    except Exception as e:
+        print(f"An error occurred when setting API Key: {e}")
+        exit()
 
-#     # Example Usage
-#     PROBLEM_IMAGES = ["imgs/testPaperB.png"]
-#     ANSWER_IMAGES = ["imgs/testPaperB.png"]  # Using testPaper again for demo
-#     GRADING_STANDARDS = """
-# Question 1: Bicycle Brake Problem (30 points)
+    # Example Usage
+    PROBLEM_IMAGES = ["imgs/testPaperB.png"]
+    ANSWER_IMAGES = ["imgs/testPaperB.png"]  # Using testPaper again for demo
+    GRADING_STANDARDS = """
+Question 1: Bicycle Brake Problem (30 points)
 
-# Problem Statement: Why are brakes on a bicycle applied to the rim of a wheel and not on the axle? Model the bicycle wheel as a disk. Apply the same normal force with the brake pad placed either near the rim or near the axle. The materials that come into contact are the same in both cases. In which case would the wheel come to rest faster? Construct a full argument, using equations as appropriate.
+Problem Statement: Why are brakes on a bicycle applied to the rim of a wheel and not on the axle? Model the bicycle wheel as a disk. Apply the same normal force with the brake pad placed either near the rim or near the axle. The materials that come into contact are the same in both cases. In which case would the wheel come to rest faster? Construct a full argument, using equations as appropriate.
 
-# Grading Breakdown:
+Grading Breakdown:
 
-# Torque Concept (8 points):
+Torque Concept (8 points):
 
-# 4 points: Correctly states that braking force applied at a distance from the axis of rotation creates a torque (τ = rF). Must be use the same formula and define what each expression means
+4 points: Correctly states that braking force applied at a distance from the axis of rotation creates a torque (τ = rF). Must be use the same formula and define what each expression means
 
-# 4 points: Explains that the larger the radius (r) at which the force is applied, the greater the torque for the same braking force (F).
+4 points: Explains that the larger the radius (r) at which the force is applied, the greater the torque for the same braking force (F).
 
-# Moment of Inertia (6 points):
+Moment of Inertia (6 points):
 
-# 3 points: Correctly states the moment of inertia (I) of a disk (wheel) is given by I = (1/2)MR², where M is the mass and R is the radius.
+3 points: Correctly states the moment of inertia (I) of a disk (wheel) is given by I = (1/2)MR², where M is the mass and R is the radius.
 
-# 3 points: Relates the moment of interia with r1<r2, so I1<I2
+3 points: Relates the moment of interia with r1<r2, so I1<I2
 
-# Relationship Between Torque and Angular Acceleration (10 points):
+Relationship Between Torque and Angular Acceleration (10 points):
 
-# 5 points: Correctly applies the relationship τ = Iα (torque equals moment of inertia times angular acceleration). Must define what each expression means.
+5 points: Correctly applies the relationship τ = Iα (torque equals moment of inertia times angular acceleration). Must define what each expression means.
 
-# 5 points: Explains that for a given torque (τ), a smaller moment of inertia (I) results in a larger angular acceleration (α), meaning a faster rate of change in angular velocity.
+5 points: Explains that for a given torque (τ), a smaller moment of inertia (I) results in a larger angular acceleration (α), meaning a faster rate of change in angular velocity.
 
-# Putting it Together - Braking Efficiency (6 points):
+Putting it Together - Braking Efficiency (6 points):
 
-# 6 points: Concludes that applying the brakes at the rim (larger radius) generates greater torque. This greater torque results in a larger angular deceleration (α), bringing the wheel to a stop faster, explain in detail, and provide correct solution.
+6 points: Concludes that applying the brakes at the rim (larger radius) generates greater torque. This greater torque results in a larger angular deceleration (α), bringing the wheel to a stop faster, explain in detail, and provide correct solution.
 
-# Detailed Scoring Rubric:
+Detailed Scoring Rubric:
 
-# Component	Points	Description
-# Correctly explains torque	4	τ = rF; defines each variable.
-# Correctly applies τ = Iα	4	Correctly applies τ = Iα; defines each variable.
-# Correct I Equation	3	Correctly states I = (1/2)MR² for a disk.
-# Relates the Moment of Interia to r1<r2	3	Relates the moment of interia with r1<r2, so I1<I2
-# Correctly applies τ = Iα	5	 Correct with calculation so  τ1 < τ2
-# Relates smaller I to larger α	5	 relates τ1/I1 > τ2/I2 correctly.
-# Understanding Efficiency of rim with smaller accelaration 	6	Correctly concludes rim braking is more efficient due to greater torque/angular deceleration for the same force and relates it all to the faster wheel stoppage.
-# General Notes:
+Component	Points	Description
+Correctly explains torque	4	τ = rF; defines each variable.
+Correctly applies τ = Iα	4	Correctly applies τ = Iα; defines each variable.
+Correct I Equation	3	Correctly states I = (1/2)MR² for a disk.
+Relates the Moment of Interia to r1<r2	3	Relates the moment of interia with r1<r2, so I1<I2
+Correctly applies τ = Iα	5	 Correct with calculation so  τ1 < τ2
+Relates smaller I to larger α	5	 relates τ1/I1 > τ2/I2 correctly.
+Understanding Efficiency of rim with smaller accelaration 	6	Correctly concludes rim braking is more efficient due to greater torque/angular deceleration for the same force and relates it all to the faster wheel stoppage.
+General Notes:
 
-# Equations Required: Students must use equations to support their argument. Arguments based purely on intuition will receive significantly reduced credit.
+Equations Required: Students must use equations to support their argument. Arguments based purely on intuition will receive significantly reduced credit.
 
-# Clarity and Logic: The solution should be presented in a clear, logical manner. The explanation must flow and be easy to follow.
+Clarity and Logic: The solution should be presented in a clear, logical manner. The explanation must flow and be easy to follow.
 
-# Assumptions: Students should state any assumptions made (e.g., the wheel is a perfect disk, the coefficient of friction is constant).
+Assumptions: Students should state any assumptions made (e.g., the wheel is a perfect disk, the coefficient of friction is constant).
 
-#     """
+    """
 
-#     grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=5)
+    grading_results = grade_answer_gemini(PROBLEM_IMAGES, ANSWER_IMAGES, GRADING_STANDARDS, scoring_difficulty=5)
 
-#     if grading_results:
-#         print("Grading Results:")
-#         print(f"Final Score: {grading_results['final_score']}")
-#         print("Individual Scores:", grading_results['scores'])
-#         print("Analyses:", grading_results['analyses'])
-#         print("Image Modification Instructions:", grading_results['image_modifications'])
+    if grading_results:
+        print("Grading Results:")
+        print(f"Final Score: {grading_results['final_score']}")
+        print("Individual Scores:", grading_results['scores'])
+        print("Analyses:", grading_results['analyses'])
+        print("Image Modification Instructions:", grading_results['image_modifications'])
 
-#         # Example of how you might apply the modifications (This part requires PIL and is just an example)
-#         try:
+        # Example of how you might apply the modifications (This part requires PIL and is just an example)
+        try:
 
-#             for i, modifications in enumerate(grading_results['image_modifications']):
-#                 img_path = ANSWER_IMAGES[i]  # Get the path to the corresponding answer image
-#                 apply_image_modifications(img_path, modifications)
+            for i, modifications in enumerate(grading_results['image_modifications']):
+                img_path = ANSWER_IMAGES[i]  # Get the path to the corresponding answer image
+                apply_image_modifications(img_path, modifications)
 
-#         except ImportError:
-#             print("PIL is not installed. Install it to apply the image modifications.")
-#         except Exception as e:
-#             print(f"Error applying image modifications: {e}")
+        except ImportError:
+            print("PIL is not installed. Install it to apply the image modifications.")
+        except Exception as e:
+            print(f"Error applying image modifications: {e}")
