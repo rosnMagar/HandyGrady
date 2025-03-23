@@ -21,10 +21,10 @@ class Homework(db.Model):
     grading_standard = db.Column(db.Text, nullable=False)
     problem_images = db.Column(db.Text, nullable=False, default='[]')
     answer_images = db.Column(db.Text, nullable=False, default='[]')
-    image_modifications = db.Column(db.Text, nullable=False, default='[]')
+    modified_images = db.Column(db.Text, nullable=False, default='[]')
     analysis = db.Column(db.Text, nullable=False, default='[]')
     final_score = db.Column(db.Float, nullable=False, default=0.0)
-    feedback = db.Column(db.Text, nullable=False, default="")
+    scores = db.Column(db.Text, nullable=False, default="")
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('user.id'), nullable=False)
     graded = db.Column(db.Boolean, nullable=False, default=False)
 
