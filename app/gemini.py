@@ -27,6 +27,8 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
     # Refresh the model instance with every call
     model = genai.GenerativeModel(model_name)
     def load_image(image_data):
+        image_data="app/static/"+image_data
+        print (image_data)
         """Helper function to load image data, handling both file paths and bytes."""
         try:
             if isinstance(image_data, str):  # assume it's a path
@@ -280,6 +282,13 @@ def grade_answer_gemini(problem_images, answer_images, grading_standards, scorin
         feedback_response.resolve()
         overall_feedback = feedback_response.text
         print("RETRN")
+        print({
+            "scores": all_scores,
+            "analyses": all_analyses,
+            "final_score": final_score,
+            "feedback": overall_feedback,
+            "modified_images": modified_image_paths  # Return the list of modified image paths
+        })
         return {
             "scores": all_scores,
             "analyses": all_analyses,
