@@ -125,6 +125,7 @@ def init_routes(app):
             # Process uploaded images
             if form.images.data:
                 files = form.images.data if isinstance(form.images.data, list) else [form.images.data]
+                print("Files:::", files)
                 for image in files:
                     if image.filename:  # Check if a file was uploaded
                         # Save the image and store its path
@@ -161,7 +162,7 @@ def init_routes(app):
         file_path = os.path.join(current_app.root_path, 'static', *filename.split('/'))
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
         
-    @app.route('/homework/hId')
+    @app.route('/homework/<string:hId>')
     def combined_charts(hId):
 
         homework = Homework.query.get(UUID(hId))
@@ -175,8 +176,8 @@ def init_routes(app):
         
         # Create pie chart
         pie_fig = px.pie(
-            names=subjects,
-            values=scores,
+            names=["Gained", "Lost"],
+            values=[overall_score, 100 - overall_score],
             title='Score Distribution',
             hole=0.4,
             color_discrete_sequence=px.colors.sequential.RdBu
