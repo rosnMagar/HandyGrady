@@ -115,7 +115,6 @@ def init_routes(app):
             homework = Homework(
                 title=form.title.data,  # Ensure this is populated
                 grading_standard=form.grading_standard.data,  # Ensure this is populated
-                analysis=form.analysis.data,
                 user_id=current_user.id
             )
             db.session.add(homework)
@@ -160,16 +159,22 @@ def init_routes(app):
         file_path = os.path.join(current_app.root_path, 'static', *filename.split('/'))
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
         
-    @app.route('/homework')
-    def combined_charts():
+    @app.route('/homework/hId')
+    def combined_charts(hId):
+
+        homework = User.query.filter_by(id=hId).first()
+        print(homework)
+
         # Sample data
         subjects = ["Math", "Science", "History", "English"]
         scores = [90, 85, 78, 88]
+
+        overall_score = 95
         
         # Create pie chart
         pie_fig = px.pie(
-            names=subjects,
-            values=scores,
+            names=["correct","incorrect"],
+            values=[overall_score, 100 - overall_score],
             title='Score Distribution',
             hole=0.4,
             color_discrete_sequence=px.colors.sequential.RdBu

@@ -18,22 +18,28 @@ from datetime import datetime  # Add this import
 class Homework(db.Model):
     id = db.Column(db.UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = db.Column(db.String(100), nullable=False)  # Add this line
-    grading_standard = db.Column(db.String(100), nullable=False)
-    image_paths = db.Column(db.Text, nullable=False, default='[]')
-    grade = db.Column(db.String(20))
-    analysis = db.Column(db.Text)
+    grading_standard = db.Column(db.Text, nullable=False)
+    problem_images = db.Column(db.Text, nullable=False, default='[]')
+    answer_images = db.Column(db.Text, nullable=False, default='[]')
+    image_modifications = db.Column(db.Text, nullable=False, default='[]')
+    analysis = db.Column(db.JSON)
+    final_score = db.Column(db.Float)
+    feedback = db.Column(db.Text)
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('user.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Add this line
 
     def add_image(self, path):
         """Add an image path to the JSON list."""
-        paths = json.loads(self.image_paths) if self.image_paths else []
+        paths = json.loads(self.answer_images) if self.answer_images else []
         paths.append(path)
-        self.image_paths = json.dumps(paths)
+        self.answer_images = json.dumps(paths)
+
+        paths2 = json.loads(self.problem_images) if self.problem_images else []
+        paths.append(paths2)
+        self.problem_images = json.dumps(paths2)
 
     def get_images(self):
         """Get a list of image paths."""
-        return json.loads(self.image_paths) if self.image_paths else []
+        return json.loads(self.answer_images) if self.answer_images else []
 
    
 @login_manager.user_loader

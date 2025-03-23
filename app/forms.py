@@ -22,13 +22,8 @@ class LoginForm(FlaskForm):
 
 class HomeworkForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])  # Must have DataRequired
-    grading_standard = SelectField(
-        'Grading Standard',
-        choices=[('AP', 'AP Scoring'), ('IB', 'IB Rubric'), ('Custom', 'Custom Standard')],
-        validators=[DataRequired()]  # Add this validator
-    )
     images = FileField('Upload Images', validators=[
         FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!')
     ], render_kw={"multiple": True})
-    analysis = TextAreaField('Analysis')
+    grading_standard = TextAreaField('Grading Standard')
     submit = SubmitField('Submit Homework')
