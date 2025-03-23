@@ -7,16 +7,18 @@
 <div class="container mx-auto px-6 grid grid-cols-5 py-8">
     {% include "/partials/_sidebar.html" %}
     <div class="col-span-4">
-        <div class="flex">
-            <!-- Placeholder Area -->
-            <div id="chart">{{ chart_json|safe }}</div>
-            <script>
-                var figure = JSON.parse('{{ chart_json|safe }}');
-                Plotly.newPlot('chart', figure.data, figure.layout);
-            </script>
+        <div class="flex md-flex">
+            <div class="flex-1/2 mx-4 w-30">
+                <!-- Placeholder Area -->
+                <div id="chart">{{ chart_html|safe }}</div>
+            </div>
+            <div class="flex-1/2 mx-4 w-30">
+                <!-- Placeholder Area -->
+                <h1>This is a bar graph</h1>
+            </div>
+
             <!-- Main Content -->
-            <main class="flex-1 mt-auto">
-            <!-- Graded Homework Section -->
+            <!-- <main class="mt-auto">
                 <div class="bg-white rounded-sm p-6 mb-6">
                     <h2 class="text-xl font-bold mb-4">Graded Homework</h2>
                     <div class="space-y-3">
@@ -34,7 +36,7 @@
                         </div>
                     </div>
                 </div>
-            </main>
+            </main> -->
         </div>
         <!-- Work-To-Do Section -->
         <div class="col-span-4">

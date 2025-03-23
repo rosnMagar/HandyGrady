@@ -4,8 +4,8 @@ from .forms import RegistrationForm, LoginForm, HomeworkForm
 
 from flask import redirect, url_for, request, flash, render_template, abort, send_from_directory, current_app
 from flask_login import current_user, login_user, login_required, logout_user
-import plotly.graph_objects as go
-import plotly
+import plotly.express as px
+import pandas as pd
 import json
 
 from uuid import uuid4
@@ -105,6 +105,7 @@ def init_routes(app):
     @app.route('/homework_upload', methods=['GET', 'POST'])
     @login_required
     def homework_upload():
+        
         form = HomeworkForm()
         
         if request.method == 'POST':
@@ -160,23 +161,16 @@ def init_routes(app):
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
     
     @app.route('/homework')
-    def plotly_chart():
-        labels = ['Grammar', 'Introduction', 'Body', 'Conclusion', 'Citation']
-        values = [20, 50, 10, 10, 10]
+    def index():
+        # Sample data
+        score = 80
+        df = pd.DataFrame({
+            "Subject": ["Gained", "Lost"],
+            "Score": [score, 100 - score]
+        })
         
-        # Doughnut Chart
-        fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=0.7)])
-        fig.update_layout(template=None)
-
-        chart_data = {
-        "data": fig.data,
-        "layout": {
-            "showlegend": True
-            # Add other layout properties here (e.g., width, height)
-            }   
-        }
-
-        print(chart_data)
-
-        chart_json = json.dumps(chart_data, cls=plotly.utils.PlotlyJSONEncoder)
-        return render_template('plotly.html', chart_json=chart_json)
+        # Create Plotly chart
+        fig = px.pie(df, names='Subject', values='Score', hole=0.5)
+        chart_html = fig.to_html(full_html=False)
+        
+        return render_template('homework.html', chart_html=chart_html)
