@@ -4,6 +4,9 @@ from .forms import RegistrationForm, LoginForm, HomeworkForm
 
 from flask import redirect, url_for, request, flash, render_template, abort, send_from_directory, current_app
 from flask_login import current_user, login_user, login_required, logout_user
+import plotly.graph_objects as go
+import plotly
+import json
 
 from uuid import uuid4
 import os
@@ -85,7 +88,6 @@ def init_routes(app):
         print(f"User {current_user.email} accessed dashboard")  # Debug print
         return render_template('dashboard.html', title='Dashboard')
 
-
     @app.route('/chats')
     @login_required
     def chat():
@@ -100,10 +102,9 @@ def init_routes(app):
 
     # homework
     # Add after your existing routes
-    @app.route('/homework', methods=['GET', 'POST'])
+    @app.route('/homework_upload', methods=['GET', 'POST'])
     @login_required
-    def homework():
-        
+    def homework_upload():
         form = HomeworkForm()
         
         if request.method == 'POST':
@@ -142,7 +143,7 @@ def init_routes(app):
 
             db.session.commit()
             flash('Homework created successfully!', 'success')
-            return redirect(url_for('homework'))
+            return redirect(url_for('homework_upload'))
 
         except Exception as e:
             db.session.rollback()
@@ -150,10 +151,32 @@ def init_routes(app):
             flash(f'Database error: {str(e)}', 'danger')
 
         homeworks = Homework.query.filter_by(user_id=current_user.id).all()
-        return render_template('homework.html', form=form, homeworks=homeworks)
+        return render_template('homework_upload.html', form=form, homeworks=homeworks)
 
     @app.route('/uploads/<path:filename>')
     def uploaded_file(filename):
         # Convert forward slashes to the system's path separator
         file_path = os.path.join(current_app.root_path, 'static', *filename.split('/'))
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
+    
+    @app.route('/homework')
+    def plotly_chart():
+        labels = ['Grammar', 'Introduction', 'Body', 'Conclusion', 'Citation']
+        values = [20, 50, 10, 10, 10]
+        
+        # Doughnut Chart
+        fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=0.7)])
+        fig.update_layout(template=None)
+
+        chart_data = {
+        "data": fig.data,
+        "layout": {
+            "showlegend": True
+            # Add other layout properties here (e.g., width, height)
+            }   
+        }
+
+        print(chart_data)
+
+        chart_json = json.dumps(chart_data, cls=plotly.utils.PlotlyJSONEncoder)
+        return render_template('plotly.html', chart_json=chart_json)
