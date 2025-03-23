@@ -184,10 +184,7 @@ def init_routes(app):
     @app.route('/homework/<string:hId>')
     def combined_charts(hId):
         homework = Homework.query.get(UUID(hId))
-
-
-        print("ZZZZ")
-        print(type(homework.scores))
+        print(homework.final_score)
 
         # Sample data
         subjects = [f"problem{i}" for i in range(1, len(eval(homework.scores)) + 1)]
@@ -195,7 +192,11 @@ def init_routes(app):
         
         print(subjects)
         print(scores)
+
         overall_score = homework.final_score
+        total
+        analysis = homework.analysis
+
         
         # Create pie chart
         pie_fig = px.pie(
@@ -220,7 +221,7 @@ def init_routes(app):
         pie_html = pie_fig.to_html(full_html=False)
         bar_html = bar_fig.to_html(full_html=False)
         
-        return render_template('homework.html', pie_html=pie_html, bar_html=bar_html)
+        return render_template('homework.html', pie_html=pie_html, bar_html=bar_html, analysis=analysis)
     
     
     @app.route('/grade_homework/<string:homework_id>', methods=['POST'])
