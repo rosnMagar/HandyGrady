@@ -245,14 +245,13 @@ def init_routes(app):
             
             print("Grading Results OVER")
             # Update the homework object with the returned values
-            homework.scores = result['scores']
-            homework.analyses = result['analyses']
+            homework.scores = str(result['scores'])
+            homework.analysis = str(result['analyses'])
             homework.final_score = result['final_score']
-            homework.feedback = result['feedback']
 
             # Save modified image paths (if applicable)
             if 'modified_images' in result and result['modified_images']:
-                homework.modified_images = result['modified_images']  # Update homework with the paths
+                homework.modified_images = str(result['modified_images'])  # Update homework with the paths
 
             # Commit the changes to the database
             db.session.commit()
