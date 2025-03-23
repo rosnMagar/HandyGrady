@@ -27,6 +27,7 @@ class Homework(db.Model):
     scores = db.Column(db.Text, nullable=False, default="")
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('user.id'), nullable=False)
     graded = db.Column(db.Boolean, nullable=False, default=False)
+    final_full_score = db.Column(db.Float)
 
     def add_image(self, path):
         """Add an image path to the JSON list."""

@@ -190,7 +190,9 @@ def init_routes(app):
         subjects = [f"Section {i}" for i in range(1, len(scores) + 1)]
 
         overall_score = homework.final_score
+        total
         analysis = homework.analysis
+
         
         # Create pie chart
         pie_fig = px.pie(
