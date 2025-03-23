@@ -194,7 +194,6 @@ def init_routes(app):
         print(scores)
 
         overall_score = homework.final_score
-        total
         analysis = homework.analysis
 
         
